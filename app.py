@@ -1,7 +1,7 @@
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
-#abcd
+
 @app.route('/')
 def upload_form():
     return render_template('upload.html')  # Ensure the above HTML form is saved as 'upload.html'
