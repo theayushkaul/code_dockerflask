@@ -32,8 +32,14 @@ Navigate into the directory
 cd code_dockerflask
 ```
 ### 2. Build and Run the Application
+
+#### Step 1: Build the Docker image
 ```bash
-docker-compose up --build
+docker build -t flask-app .
+```
+#### Step 2: Run the Docker Container
+```bash
+docker run -p 5000:5000 flask-app
 ```
 This command will:
 - Build the Docker image for the Flask application.
