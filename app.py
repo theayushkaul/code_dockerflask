@@ -21,4 +21,4 @@ def upload_file():
         return "Invalid file type. Please upload a CSV file.", 400
 
 if __name__ == '__main__':
-    app.run()
+    app.run(host='0.0.0.0', port=5000)
