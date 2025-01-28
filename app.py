@@ -1,24 +1,33 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, jsonify, render_template
+import os
 
 app = Flask(__name__)
+UPLOAD_FOLDER = "./uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 @app.route('/')
 def upload_form():
-    return render_template('upload.html')  # Ensure the above HTML form is saved as 'upload.html'
-
+    return render_template('upload.html')
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'csvFile' not in request.files:
-        return "No file part", 400
-    file = request.files['csvFile']
-    if file.filename == '':
-        return "No selected file", 400
-    if file and file.filename.endswith('.csv'):
-        # Save the file or process it
-        file.save(f"./uploads/{file.filename}")  # Save to 'uploads' folder
-        return f"File '{file.filename}' uploaded successfully!"
+    # Extract chunk metadata
+    chunk = request.files['chunk']
+    filename = request.form['filename']
+    chunk_index = int(request.form['chunkIndex'])
+    total_chunks = int(request.form['totalChunks'])
+    
+    # Path to save the chunked file
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+
+    # Append the chunk to the file
+    with open(file_path, 'ab') as f:
+        f.write(chunk.read())
+    
+    # Return a response for each chunk
+    if chunk_index + 1 == total_chunks:
+        return jsonify({'message': f"File '{filename}' uploaded successfully!"}), 200
     else:
-        return "Invalid file type. Please upload a CSV file.", 400
+        return jsonify({'message': f"Chunk {chunk_index + 1}/{total_chunks} uploaded successfully!"}), 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

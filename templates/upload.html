@@ -1,17 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV File Upload</title>
-</head>
-<body>
-    <h1>Upload CSV File</h1>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-        <label for="csvFile">Choose a CSV file:</label>
-        <input type="file" id="csvFile" name="csvFile" accept=".csv" required>
-        <br><br>
-        <button type="submit">Upload</button>
-    </form>
-</body>
-</html>
+    <html>
+    <head>
+        <title>Chunked File Upload</title>
+    </head>
+    <body>
+        <h1>Upload File in Chunks</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file" required>
+            <button type="button" onclick="uploadFile()">Upload</button>
+        </form>
+        <script>
+            async function uploadFile() {
+                const fileInput = document.getElementById('fileInput');
+                const file = fileInput.files[0];
+                if (!file) {
+                    alert('Please select a file to upload.');
+                    return;
+                }
+                
+                const chunkSize = 1024 * 1024;
+                const totalChunks = Math.ceil(file.size / chunkSize);
+                
+                for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+                    const start = chunkIndex * chunkSize;
+                    const end = Math.min(start + chunkSize, file.size);
+                    const chunk = file.slice(start, end);
+                    
+                    const formData = new FormData();
+                    formData.append('chunk', chunk);
+                    formData.append('filename', file.name);
+                    formData.append('chunkIndex', chunkIndex);
+                    formData.append('totalChunks', totalChunks);
+                    
+                    await fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    }).then(res => res.json())
+                      .then(data => console.log(data.message))
+                      .catch(err => console.error(err));
+                }
+                
+                alert('File upload completed!');
+            }
+        </script>
+    </body>
+    </html>
